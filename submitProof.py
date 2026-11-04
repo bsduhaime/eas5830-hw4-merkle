@@ -89,13 +89,13 @@ def build_merkle(leaves):
         the root hash produced by the "hash_pair" helper function
     """
     tree = [leaves]
-    leaf_hashes = []
+    #leaf_hashes = []
     
-    for leaf in leaves:
-        leaf_hashes.append(Web3.solidity_keccak(['bytes32'], [leaf]))
+    #for leaf in leaves:
+    #    leaf_hashes.append(Web3.solidity_keccak(['bytes32'], [leaf]))
     
-    tree.append(leaf_hashes)
-    tree_size = len(leaf_hashes)
+    #tree.append(leaf_hashes)
+    tree_size = len(leaves)
     
     while tree_size > 1:
         next_tree = []
