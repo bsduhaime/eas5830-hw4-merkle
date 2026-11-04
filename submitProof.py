@@ -89,12 +89,6 @@ def build_merkle(leaves):
         the root hash produced by the "hash_pair" helper function
     """
     tree = [leaves]
-    #leaf_hashes = []
-    
-    #for leaf in leaves:
-    #    leaf_hashes.append(Web3.solidity_keccak(['bytes32'], [leaf]))
-    
-    #tree.append(leaf_hashes)
     tree_size = len(leaves)
     
     while tree_size > 1:
@@ -119,15 +113,22 @@ def prove_merkle(merkle_tree, random_indx):
         parent hash values, up to index -1 which is the list of the root hash.
         returns a proof of inclusion as list of values
     """
-    merkle_proof = [merkle_tree[0][random_indx]]
-    tree_idx = 1
+    merkle_proof = []
     curr_idx = random_indx
     
-    while tree_idx < len(merkle_tree):
-        next_idx = (curr_idx // 2)
-        merkle_proof.append(merkle_tree[tree_idx][next_idx])
-        tree_idx += 1
-        curr_idx = next_idx
+    for i in range(len(merkle_tree)-1):
+        curr_level = merkle_tree[i]
+        
+        sib_idx = 0
+        if curr_idx % 2 == 0:
+            sib_idx = curr_idx+1
+            if(sib_idx >= len(curr_level)):
+                sib_idx = curr_idx
+        else:
+            sib_idx = curr_idx-1
+        
+        merkle_proof.append(curr_level[sib_idx])
+        curr_idx = curr_idx // 2
 
     return merkle_proof
 
