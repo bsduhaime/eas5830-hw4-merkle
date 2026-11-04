@@ -29,7 +29,7 @@ def merkle_assignment():
     #print(tree)
 
     # Select a random leaf and create a proof for that leaf
-    random_leaf_index = 4412 #TODO generate a random index from primes to claim (0 is already claimed)
+    random_leaf_index = 3956 #TODO generate a random index from primes to claim (0 is already claimed)
     proof = prove_merkle(tree, random_leaf_index)
     #print("---PROOF---")
     #print(proof)
@@ -165,7 +165,17 @@ def send_signed_msg(proof, random_leaf):
     w3 = connect_to(chain)
 
     contract = w3.eth.contract(address=address, abi=abi)
-    tx_hash = contract.functions.submit(proof, random_leaf)
+    
+    txn = contract.functions.submit(proof, random_leaf).build_transaction({
+        'from': acct.address,
+        'nonce': w3.eth.get_transaction_count(acct.address),
+        'gas': 500000, # Adjust gas limit as needed or use w3.eth.estimate_gas
+        'gasPrice': w3.eth.gas_price,
+        'chainId': w3.eth.chain_id # Automatically fetches the correct chain ID
+    })
+
+    signed_txn = w3.eth.account.sign_transaction(txn, private_key=acct.key)
+    tx_hash = w3.eth.send_raw_transaction(signed_txn.raw_transaction)
 
     return tx_hash
 
