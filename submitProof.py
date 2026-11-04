@@ -17,16 +17,22 @@ def merkle_assignment():
     # Generate the list of primes as integers
     num_of_primes = 8192
     primes = generate_primes(num_of_primes)
+    #print("---PRIMES---")
+    #print(primes)
 
     # Create a version of the list of primes in bytes32 format
     leaves = convert_leaves(primes)
 
     # Build a Merkle tree using the bytes32 leaves as the Merkle tree's leaves
     tree = build_merkle(leaves)
+    #print("---TREE---")
+    #print(tree)
 
     # Select a random leaf and create a proof for that leaf
-    random_leaf_index = 0 #TODO generate a random index from primes to claim (0 is already claimed)
+    random_leaf_index = 4412 #TODO generate a random index from primes to claim (0 is already claimed)
     proof = prove_merkle(tree, random_leaf_index)
+    print("---PROOF---")
+    print(proof)
 
     # This is the same way the grader generates a challenge for sign_challenge()
     challenge = ''.join(random.choice(string.ascii_letters) for i in range(32))
@@ -37,7 +43,7 @@ def merkle_assignment():
         tx_hash = '0x'
         # TODO, when you are ready to attempt to claim a prime (and pay gas fees),
         #  complete this method and run your code with the following line un-commented
-        # tx_hash = send_signed_msg(proof, leaves[random_leaf_index])
+        tx_hash = send_signed_msg(proof, leaves[random_leaf_index])
 
 
 def generate_primes(num_primes):
@@ -45,16 +51,20 @@ def generate_primes(num_primes):
         Function to generate the first 'num_primes' prime numbers
         returns list (with length n) of primes (as ints) in ascending order
     """
-    primes_list = []
-    p = 2
-    while primes_list.len() < num_primes:
+    if num_primes < 1:
+        return []
+        
+    primes_list = [2]
+    p = 3
+    while len(primes_list) < num_primes:
         is_prime = True
-        for i in range(2,p):
-            if(p % i == 0):
+        for prime in primes_list:
+            if(p % prime == 0):
                 is_prime = False
+                break
         if is_prime:
             primes_list.append(p)
-        p += 1
+        p += 2
     return primes_list
 
 
@@ -66,7 +76,7 @@ def convert_leaves(primes_list):
 
     bytes_array = []
     for prime in primes_list:
-    	bytes_array.append(prime.to_bytes(32, byteorder='big')
+    	bytes_array.append(prime.to_bytes(32, byteorder='big'))
 
     return bytes_array
 
@@ -135,8 +145,8 @@ def sign_challenge(challenge):
     addr = acct.address
     eth_sk = acct.key
 
-    # TODO YOUR CODE HERE
-    eth_sig_obj = 'placeholder'
+    encoded_msg = eth_account.messages.encode_defunct(text=challenge)
+    eth_sig_obj = eth_account.Account.sign_message(encoded_msg, private_key=eth_sk)
 
     return addr, eth_sig_obj.signature.hex()
 
@@ -153,8 +163,8 @@ def send_signed_msg(proof, random_leaf):
     address, abi = get_contract_info(chain)
     w3 = connect_to(chain)
 
-    # TODO YOUR CODE HERE
-    tx_hash = 'placeholder'
+    contract = w3.eth.contract(address=address, abi=abi)
+    tx_hash = contract.functions.submit(proof, random_leaf)
 
     return tx_hash
 
